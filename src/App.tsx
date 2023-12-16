@@ -1,5 +1,7 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import './App.css'
+import Todo from "./components/Todo"
+import TodoForm from "./components/TodoForm"
 
 const INITIAL_TODOS = [
   {id: 1, done: false, text: 'Take the cat out for a walk'},
@@ -10,41 +12,33 @@ const INITIAL_TODOS = [
 function App() {
   const [lastTodoId, setLastTodoId] = useState(3)
   const [todos, setTodos] = useState(INITIAL_TODOS)
-  const [newTodo, setNewTodo] = useState('')
 
-  function addTodo() {
+  function addTodo(newTodo: string) {
     const newTodoObj = {
       id: lastTodoId + 1,
       done: false,
       text: newTodo
     }
 
-    setNewTodo('')
     setTodos(prev => [...prev, newTodoObj])
-    setLastTodoId(prev => prev++)
+    setLastTodoId(prev => prev + 1)
   }
 
   function deleteTodo(id: number) {
     setTodos(prev => prev.filter(t => t.id !== id))
   }
 
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
+
   return (
     <>
       <h1>Todo List</h1>
-        <form className="todo-form">
-          <input type="text" placeholder="Enter todo..."
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-          />
-          <button type="button" onClick={() => addTodo()}>Add new todo</button>
-        </form>
+        <TodoForm onAddTodo={addTodo} />
         <ul className="todo-list">
             {todos.map((t) => (
-              <li key={t.id}>
-                <input type="checkbox" checked={t.done} />
-                <span>{t.text}</span>
-                <button type="button" onClick={() => deleteTodo(t.id)}>Delete</button>
-              </li>
+              <Todo key={t.id} text={t.text} isDone={t.done} onDelete={() => deleteTodo(t.id)} />
             ))}
         </ul>
     </>
